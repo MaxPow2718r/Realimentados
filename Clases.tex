@@ -1,0 +1,112 @@
+\documentclass[a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+
+%url package
+\usepackage[pdftex,colorlinks=true, urlcolor=blue, linkcolor = black, citecolor=black]{hyperref}
+
+%math fonts
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+
+%graphics enviroments
+\usepackage{graphicx}
+\usepackage{pgfplots}
+\usepackage{import}
+\usepackage{pdfpages}
+\usepackage{transparent}
+\pgfplotsset{compat=1.15}
+
+%use inkscape to import directly svg images
+\newcommand{\executeiffilenewer}[3]{%
+		\ifnum\pdfstrcmp{\pdffilemoddate{#1}}%
+				{\pdffilemoddate{#2}}>0%
+		{\inmmediate\write18{#3}}\fi%
+}
+\newcommand{\includesvg}[1]{%
+		\executeiffilenewer{#1.svg}{#1.pdf}%
+		{inkscape -z -D --file=#1.svg %
+		--export-pdf=#1.pdf --export-latex}%
+		\input{#1.pdf_tex}%
+
+}
+%circuit diagrams packages
+\usepackage{circuitikz}
+
+\begin{document}
+\title{Control realimentado}
+\maketitle
+\section{Introducción}\label{sec:intro}
+La ingeniería de control está presente en prácticamente todos los sistemas de ingeniería modernos.
+
+El control es una tecnología que no está a la vista, está escondida.
+
+\subsection{el control es la llave tecnológica que permite:}
+\begin{itemize}
+\item mejorar la calidad de productos
+\item minimizar kas emisiones y los desechos.
+\item protección del medio ambiente.
+\end{itemize}
+
+El control es una tarea multidisciplinaria que incluye:
+\begin{itemize}
+\item Sensores.
+\item Actuadores.
+\item Comunicación.
+\item Computación.
+\item Arquitectura.
+\item Algoritmo.
+\end{itemize}
+
+\subsection{Objetivo}
+El objetivo del diseño de control es lograr un nivel deseado de desempeño en la presencia de perturbaciones e incertidumbres.
+
+\section{Modelado}\label{sec:modelado}
+Para abordar el diseño de sistemas de control primero tenemos que entender como funciona (opera) el proceso o sistema a controlar.
+
+Entonces, típicamente describiremos el proceso de forma matemática, esto es, un modelo matemático del proceso.
+
+En la conclusión del modelo se define primero las variables relevantes del proceso.
+
+Entonces tenemos (ejemplo):
+\begin{itemize}
+\item $h*$: nivel de referencia del molde.
+\item $h(t)$: nivel actual (nivel actual dentro del molde o tanque).
+\item $v(t)$: posición de la válvula.
+\item $\sigma(t)$: velocidad de fundición (del proceso).
+\item $q_{in}(t)$: flujo de entrada.
+\item $q_{out}(t)$: flujo de salida.
+\end{itemize}
+
+La física nos sugiere el nivel del proceso (tanque, molde) sea proporcional a la integral de la diferencia entre el flujo de entrada y salida, es:
+\begin{equation}\label{eq:altura}
+		h(t) = \int_{-\infty}^{t}q_{in} (\tau) - q_{out} (\tau) \mathrm{d}\tau
+\end{equation}
+
+Se asume por simplicidad que el tanque tiene sección transversal uno (unidad).
+
+También se asume que $v(t)$ y $\sigma(t)$ están calibradas de manera que indican los flujos de entrada y salida respectivamente.
+
+\begin{equation}\label{eq:valvula}
+		v(t) = q_{in} (t)
+\end{equation}
+
+\begin{equation}\label{eq:velocidad}
+		\sigma (t) = q_{out} (t)
+\end{equation}
+
+Entonces el modelo del proceso queda como:
+\begin{equation}\label{eq:altura2}
+		h(t) = \int_{-\infty}^{t}(v(\tau) - \sigma(\tau)) \mathrm{d}\tau
+\end{equation}
+La velocidad de función se puede medir con la bastante precisión, pero los sensores de nivel del tanque suelen ser propensos a \emph{ruido} de medición de alta frecuencia, esto lo introducimos al modelo como señal aditiva $\eta(t)$
+
+Entonces tenemos:
+\begin{equation}\label{eq:ruido}
+h_{\eta} (t) = h(t) + \eta(t)
+\end{equation}
+
+Donde
+\end{document}
