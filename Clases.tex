@@ -34,6 +34,7 @@
 }
 %circuit diagrams packages
 \usepackage{circuitikz}
+\usetikzlibrary{arrows}
 
 \begin{document}
 \title{Control realimentado}
@@ -105,8 +106,11 @@ La velocidad de función se puede medir con la bastante precisión, pero los sen
 
 Entonces tenemos:
 \begin{equation}\label{eq:ruido}
-h_{\eta} (t) = h(t) + \eta(t)
+h_{m} (t) = h(t) + \eta(t)
 \end{equation}
 
-Donde
+Donde $h_m(t)$ es la medición de $h(t)$ con ruido. En la figura 1 se muestra el diagrama de bloques del modelo del proceso general y las mediciones.
+
+Este es un modelo muy simple, pero nos presenta la esencia del problema.
+
 \end{document}
