@@ -129,13 +129,13 @@ Este es un modelo muy simple, pero nos presenta la esencia del problema.
 (0,0) node[mixer] (m) {}
 (m.1) node[inputarrow] {} node[right] {+}
 to[short] ++(-4,0) node[below, text width = 2.5cm] {flujo de entrada}
-(m.3) to[twoport,t = $\displaystyle \int$, >, n=caja] ++(3,0)
+(m.3) to[twoport,t = $\displaystyle \int$, >] ++(3,0)
 to[short, -*] ++(1,0)
 to[short] ++(2,0) node[inputarrow] {}
 node[above, text width = 2.5cm] {nivel del tanque}
 to[short] ++(-2,0)
 to[short] ++(0,-2)
-node[mixer, below = caja] (m2) {}
+node[mixer, below] (m2) {}
 (m2.4) node[inputarrow, rotate = 270] {} node [below] {+}
 (m2.3) node[inputarrow, rotate = 180] {} node[left] {+} to[short] ++(2,0)
 node[above] {ruido}
@@ -189,5 +189,48 @@ Sea $h(t)$ una señal causal $\implies h(t) \exists \forall t\ge 0 $:
 
 Entonces aquí tenemos un controlador que está constituido por una parte retroalimentada (feedback) y una parte de acción preventiva (feedforward) el segundo termino entrega la acción predecible necesaria para compensar los cambios en la velocidad de fundición (para el ejemplo) mientras que el primer término reacciona al error dado por la diferencia entre el valor referencial y el valor actual del nivel.
 
-\end{document}
+\begin{figure}[h!]
+\label{fig:sistema_control}
+\centering
+\begin{circuitikz}[american voltages]
+\draw
+(0,0) node[mixer] (m1) {}
+(m1.1) node[inputarrow] {} node[right] {+}
+to[short] ++(-2,0) node[above] {referencia $h^*$}
+(m1.3) to[short] ++(2,0)
+node[mixer, right] (m2) {}
+(m2.1) node[inputarrow] {} node[right] {+} node[above left] {$e(t)$}
+(m2.3) to[twoport, t = $k$, >] ++(3,0)
+node[mixer, right] (m3) {}
+(m3.1) node[inputarrow] {} node[right] {+}
+to[short] ++(-0.5,0) node[] (flujo_in) {}
+(m3.3) to[twoport, t = $\displaystyle \int$, >] ++(3,0)
+to[short, -*] ++(0,0)
+to[short] ++(2,0) node[inputarrow] {} node[above, text width = 2.5cm] {nivel del molde (tanque) salida}
+node[below] {$h(t)$}
+to[short] ++(-2,0)
+to[short] ++(0,-2)
+node[mixer, below] (m4) {} node[inputarrow, rotate = 270] {} node[below] {+}
+(m4.3) node[inputarrow, rotate = 180] {} node[left] {+} node[below right] {$\eta(t)$}
+to[short] ++(2,0) node[above] {ruido}
+(m4.2) to[short] ++(0,-2) to[short] ++(-4,0)
+node[] (medicion) {}
+to[short] ++(4,0) -| (m1.2)
+node[inputarrow, rotate = 90] {}
+node[above] {-} node[below left] {$h_m(t)$}
+(m3.4) node[inputarrow, rotate = 270] {} node[below] {-}
+to[short, -*] ++(0,2) to[short] ++(0,2) node[right, text width = 2.5cm] {flujo de salida corresponde a la velocidad de fundición} node[below, left] {$\sigma(t)$}
+to[short] ++(0,-2)
+to[twoport, t = $k^{-1}$, >] node[above, text width = 2cm] {medición de velocidad de fundición} ++(-4,0)
+to[short] (m2.4) node[inputarrow, rotate = 270] {} node[below] {+}
+;
+\draw node[below of= flujo_in, node distance = 2cm, text width = 2.5cm] (texto) {flujo de entrada desde la válvula de control};
+\draw [->] (texto) -- (flujo_in);
+\draw node[below of = medicion, node distance = 0.5cm, text width = 3cm] {medición del nivel en el molde}
+\end{circuitikz}
+\caption{Modelo simplificado del control de nivel con acción compensativa para $q_{out} (t)$}
+\end{figure}
 
+La figura~\ref{fig:sistema_control} muestra el diagrama de bloques para el sistema de control.
+
+\end{document}
