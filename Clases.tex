@@ -1,7 +1,6 @@
 \documentclass[a4paper]{article}
 
 \usepackage[utf8]{inputenc}
-\usepackage[spanish]{babel}
 
 %url package
 \usepackage[pdftex,colorlinks=true, urlcolor=blue, linkcolor = black, citecolor=black]{hyperref}
@@ -34,7 +33,7 @@
 }
 %circuit diagrams packages
 \usepackage{circuitikz}
-\usetikzlibrary{arrows}
+\usetikzlibrary{shapes, arrows}
 
 \begin{document}
 \title{Control realimentado}
@@ -113,4 +112,28 @@ Donde $h_m(t)$ es la medición de $h(t)$ con ruido. En la figura 1 se muestra el
 
 Este es un modelo muy simple, pero nos presenta la esencia del problema.
 
+\tikzstyle{block} = [draw, rectangle, minimum height=3em, minimum width=6em]
+\tikzstyle{sum} = [draw, circle, node distance = 1cm]
+\tikzstyle{input} = [coordinate]
+\tikzstyle{output} = [coordinate]
+\tikzstyle{pinstyle} = [pin edge={to-,thin,black}]
+
+\begin{figure}[h!]
+\centering
+\begin{circuitikz}[american voltages]
+\draw
+(0,0) node[mixer] (m) {}
+(m.1) node[inputarrow] {} node[above left] {+}
+to[short] ++(-4,0) node[below, text width = 2.5cm] {flujo de entrada}
+(m.3) to[twoport,t = $\displaystyle \int$, >] ++(3,0)
+(m.4) node[inputarrow, rotate = 270] {} node[above right] {-} to[short, -*] ++(0,2)
+to[short] ++(0,2) node[right, text width = 2.5cm] {flujo de salida (velocidad de fundición)}
+to[short] ++(0,-2)
+to[short] ++(-2,0)
+node[inputarrow, rotate =180] {} node[above, text width = 3cm] {medida de la\\ velocidad del flujo}
+;
+\end{circuitikz}
+\end{figure}
+
 \end{document}
+
