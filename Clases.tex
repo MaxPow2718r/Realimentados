@@ -35,19 +35,24 @@
 \usepackage{circuitikz}
 \usetikzlibrary{shapes, arrows}
 
+%page format
+\usepackage[margin = 2cm, left = 2cm, includefoot]{geometry}
+
 \begin{document}
 \title{Control realimentado}
 \maketitle
+\date{}
 \section{Introducción}\label{sec:intro}
+
 La ingeniería de control está presente en prácticamente todos los sistemas de ingeniería modernos.
 
 El control es una tecnología que no está a la vista, está escondida.
 
 \subsection{el control es la llave tecnológica que permite:}
 \begin{itemize}
-\item mejorar la calidad de productos
-\item minimizar kas emisiones y los desechos.
-\item protección del medio ambiente.
+\item Mejorar la calidad de productos.
+\item Minimizar kas emisiones y los desechos.
+\item Protección del medio ambiente.
 \end{itemize}
 
 El control es una tarea multidisciplinaria que incluye:
@@ -61,9 +66,12 @@ El control es una tarea multidisciplinaria que incluye:
 \end{itemize}
 
 \subsection{Objetivo}
+
 El objetivo del diseño de control es lograr un nivel deseado de desempeño en la presencia de perturbaciones e incertidumbres.
 
 \section{Modelado}\label{sec:modelado}
+\subsection{Modelado matemático}
+
 Para abordar el diseño de sistemas de control primero tenemos que entender como funciona (opera) el proceso o sistema a controlar.
 
 Entonces, típicamente describiremos el proceso de forma matemática, esto es, un modelo matemático del proceso.
@@ -72,7 +80,7 @@ En la conclusión del modelo se define primero las variables relevantes del proc
 
 Entonces tenemos (ejemplo):
 \begin{itemize}
-\item $h*$: nivel de referencia del molde.
+\item $h^*$: nivel de referencia del molde.
 \item $h(t)$: nivel actual (nivel actual dentro del molde o tanque).
 \item $v(t)$: posición de la válvula.
 \item $\sigma(t)$: velocidad de fundición (del proceso).
@@ -101,6 +109,7 @@ Entonces el modelo del proceso queda como:
 \begin{equation}\label{eq:altura2}
 		h(t) = \int_{-\infty}^{t}(v(\tau) - \sigma(\tau)) \mathrm{d}\tau
 \end{equation}
+
 La velocidad de función se puede medir con la bastante precisión, pero los sensores de nivel del tanque suelen ser propensos a \emph{ruido} de medición de alta frecuencia, esto lo introducimos al modelo como señal aditiva $\eta(t)$
 
 Entonces tenemos:
@@ -108,32 +117,77 @@ Entonces tenemos:
 h_{m} (t) = h(t) + \eta(t)
 \end{equation}
 
-Donde $h_m(t)$ es la medición de $h(t)$ con ruido. En la figura 1 se muestra el diagrama de bloques del modelo del proceso general y las mediciones.
+Donde $h_m(t)$ es la medición de $h(t)$ con ruido. En la figura~\ref{fig:modelo_simple} se muestra el diagrama de bloques del modelo del proceso general y las mediciones.
 
 Este es un modelo muy simple, pero nos presenta la esencia del problema.
 
-\tikzstyle{block} = [draw, rectangle, minimum height=3em, minimum width=6em]
-\tikzstyle{sum} = [draw, circle, node distance = 1cm]
-\tikzstyle{input} = [coordinate]
-\tikzstyle{output} = [coordinate]
-\tikzstyle{pinstyle} = [pin edge={to-,thin,black}]
 
-\begin{figure}[h!]
+\begin{figure}[h!]\label{fig:modelo_simple}
 \centering
 \begin{circuitikz}[american voltages]
 \draw
 (0,0) node[mixer] (m) {}
-(m.1) node[inputarrow] {} node[above left] {+}
+(m.1) node[inputarrow] {} node[right] {+}
 to[short] ++(-4,0) node[below, text width = 2.5cm] {flujo de entrada}
-(m.3) to[twoport,t = $\displaystyle \int$, >] ++(3,0)
-(m.4) node[inputarrow, rotate = 270] {} node[above right] {-} to[short, -*] ++(0,2)
+(m.3) to[twoport,t = $\displaystyle \int$, >, n=caja] ++(3,0)
+to[short, -*] ++(1,0)
+to[short] ++(2,0) node[inputarrow] {}
+node[above, text width = 2.5cm] {nivel del tanque}
+to[short] ++(-2,0)
+to[short] ++(0,-2)
+node[mixer, below = caja] (m2) {}
+(m2.4) node[inputarrow, rotate = 270] {} node [below] {+}
+(m2.3) node[inputarrow, rotate = 180] {} node[left] {+} to[short] ++(2,0)
+node[above] {ruido}
+(m2.2) to[short] ++(0,-2)
+to[short] ++(-4,0) node[inputarrow, rotate = 180] {}
+node[below, text width = 2.5cm] {medida del nivel del tanque homólogo}
+(m.4) node[inputarrow, rotate = 270] {} node[below] {-} to[short, -*] ++(0,2)
 to[short] ++(0,2) node[right, text width = 2.5cm] {flujo de salida (velocidad de fundición)}
 to[short] ++(0,-2)
 to[short] ++(-2,0)
 node[inputarrow, rotate =180] {} node[above, text width = 3cm] {medida de la\\ velocidad del flujo}
 ;
 \end{circuitikz}
+\caption{Diagrama de bloques del un modelo simple de la dinámica del nivel del tanque, sensores y actuadores.}
 \end{figure}
+
+\subsection{Feedback y feedforward}
+
+En general veremos más adelante que la idea de central en el control es la \underline{inversión} esta idea se puede lograr mediante el uso de técnicas claves, feedback y feedforward. Estas herramientas son una solución elegante y robusta a muchos problemas de diseño de control. Para el ejemplo del caso del control de nivel del molde (tanque), el controlador de retroalimentación (feedback) más simple es una ganancia constante $k$ que impulsa (actúa) proporcionalmente al error entre el nivel de referencia, $h^*$ y la medición real del modelo $h_m(t)$.
+\begin{equation}\label{eq:velocidad_proporcional}
+		v(t) = k\left(h^* - h_m(t)\right)
+\end{equation}
+
+Para anticipar como un controlador de este tipo debe desempeñarse o funcionar, observamos que primero debe ocurrir una desviación (error o diferencia) entre el punto de referencia (set point) y la medida actual. Antes de que el controlador pueda reaccionar sabemos, sin embargo, que un cambio de los requerimientos de la velocidad de fundición (del proceso) requiere una modificación del punto de operación de ka válvula.
+
+Por lo tanto, en lugar de que se haga un cambio en la velocidad de fundición, lo que produce un error en el nivel del molde, al cual el control realimentado reacciona para corregir, podemos mejorar la estrategia (del control) cambiando la posición de la válvula, pro activamente, a esto se le llama \underline{feedforward} (prealimentación).
+
+Esto nos da la siguiente forma para el controlador.
+\begin{equation}\label{eq:controlador_completo}
+		v(t) = k(\underbrace{\left[h* - h_m(t)\right]}_{feedback}  + \underbrace{\left[\frac{1}{k} \sigma(t) \right]}_{feedforward}  )
+\end{equation}
+
+Observación:
+\[h(t) = \int_{0}^{t}(v(\tau) - \sigma(\tau)) \mathrm{d}\tau\]
+\[v(t) = q_{in}(t) \qquad;\qquad \sigma(t) = q_{out} (t) \]
+\[h_m(t) = h(t) + \eta(t)\]
+
+El control realimentado más simple es una ganancia constante $k$, que maneja la válvula proporcionalmente al error $e(t)$.
+
+Por intuición se espera que $h(t) \approx h^*$.
+
+\[h(t) = \int_{0}^{t}\left(k\left( \left[h^* - h_m(\tau) \right] + \left[ \frac{1}{k} \sigma(\tau) \right] \right) -\sigma(\tau)\right)\mathrm{d}\tau\]
+
+\[h(t) = \int_{-\infty}^{t}\left(k(h^* - h_m(\tau)) \right) \mathrm{d}\tau~;\qquad h_m(t) = h(t) + \eta(t)\]
+
+\[h(t) = \int_{-\infty}^{t}\left(kh^* - kh(\tau) - k\eta(\tau) \right) \mathrm{d}\tau\]
+\[h(t) = \int_{-\infty}^{t}kh^*\mathrm{d}\tau - \int_{-\infty}^{t}kh(\tau) \mathrm{d}\tau - \int_{-\infty}^{t}k\eta(\tau) \mathrm{d}\tau\]
+
+Sea $h(t)$ una señal causal $\implies h(t) \exists \forall t\ge 0 $:
+\[\implies h(t) = \int_{0}^{t}kh^*\mathrm{d}\tau - \int_{0}^{t}kh(\tau)\mathrm{d}\tau - \int_{0}^{t}k\eta(\tau)\mathrm{d}\tau\]
+
+Entonces aquí tenemos un controlador que está constituido por una parte retroalimentada (feedback) y una parte de acción preventiva (feedforward) el segundo termino entrega la acción predecible necesaria para compensar los cambios en la velocidad de fundición (para el ejemplo) mientras que el primer término reacciona al error dado por la diferencia entre el valor referencial y el valor actual del nivel.
 
 \end{document}
 
