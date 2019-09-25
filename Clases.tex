@@ -1,6 +1,7 @@
 \documentclass[a4paper]{article}
 
 \usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
 
 %url package
 \usepackage[pdftex,colorlinks=true, urlcolor=blue, linkcolor = black, citecolor=black]{hyperref}
@@ -12,11 +13,6 @@
 
 %graphics enviroments
 \usepackage{graphicx}
-\usepackage{pgfplots}
-\usepackage{import}
-\usepackage{pdfpages}
-\usepackage{transparent}
-\pgfplotsset{compat=1.15}
 
 %use inkscape to import directly svg images
 \newcommand{\executeiffilenewer}[3]{%
@@ -33,15 +29,15 @@
 }
 %circuit diagrams packages
 \usepackage{circuitikz}
-\usetikzlibrary{shapes, arrows}
+\usetikzlibrary{shapes, arrows, babel}
 
 %page format
 \usepackage[margin = 2cm, left = 2cm, includefoot]{geometry}
 
 \begin{document}
 \title{Control realimentado}
-\maketitle
 \date{}
+\maketitle
 \section{Introducción}\label{sec:intro}
 
 La ingeniería de control está presente en prácticamente todos los sistemas de ingeniería modernos.
@@ -122,8 +118,7 @@ Donde $h_m(t)$ es la medición de $h(t)$ con ruido. En la figura~\ref{fig:modelo
 Este es un modelo muy simple, pero nos presenta la esencia del problema.
 
 
-\begin{figure}[h!]\label{fig:modelo_simple}
-\centering
+\begin{figure}[!ht]\centering
 \begin{circuitikz}[american voltages]
 \draw
 (0,0) node[mixer] (m) {}
@@ -150,13 +145,14 @@ node[inputarrow, rotate =180] {} node[above, text width = 3cm] {medida de la\\ v
 ;
 \end{circuitikz}
 \caption{Diagrama de bloques del un modelo simple de la dinámica del nivel del tanque, sensores y actuadores.}
+\label{fig:modelo_simple}
 \end{figure}
 
 \subsection{Feedback y feedforward}
 
-En general veremos más adelante que la idea de central en el control es la \underline{inversión} esta idea se puede lograr mediante el uso de técnicas claves, feedback y feedforward. Estas herramientas son una solución elegante y robusta a muchos problemas de diseño de control. Para el ejemplo del caso del control de nivel del molde (tanque), el controlador de retroalimentación (feedback) más simple es una ganancia constante $k$ que impulsa (actúa) proporcionalmente al error entre el nivel de referencia, $h^*$ y la medición real del modelo $h_m(t)$.
+En general veremos más adelante que la idea de central en el control es la \underline{inversión} esta idea se puede lograr mediante el uso de técnicas claves, feedback y feedforward. Estas herramientas son una solución elegante y robusta a muchos problemas de diseño de control. Para el ejemplo del caso del control de nivel del molde (tanque), el controlador de retroalimentación (feedback) más simple es una ganancia constante $K$ que impulsa (actúa) proporcionalmente al error entre el nivel de referencia, $h^*$ y la medición real del modelo $h_m(t)$.
 \begin{equation}\label{eq:velocidad_proporcional}
-		v(t) = k\left(h^* - h_m(t)\right)
+		v(t) = K\left(h^* - h_m(t)\right)
 \end{equation}
 
 Para anticipar como un controlador de este tipo debe desempeñarse o funcionar, observamos que primero debe ocurrir una desviación (error o diferencia) entre el punto de referencia (set point) y la medida actual. Antes de que el controlador pueda reaccionar sabemos, sin embargo, que un cambio de los requerimientos de la velocidad de fundición (del proceso) requiere una modificación del punto de operación de ka válvula.
@@ -165,7 +161,7 @@ Por lo tanto, en lugar de que se haga un cambio en la velocidad de fundición, l
 
 Esto nos da la siguiente forma para el controlador.
 \begin{equation}\label{eq:controlador_completo}
-		v(t) = k(\underbrace{\left[h* - h_m(t)\right]}_{feedback}  + \underbrace{\left[\frac{1}{k} \sigma(t) \right]}_{feedforward}  )
+		v(t) = K(\underbrace{\left[h^* - h_m(t)\right]}_{feedback}  + \underbrace{\left[\frac{1}{K} \sigma(t) \right]}_{feedforward}  )
 \end{equation}
 
 Observación:
@@ -173,26 +169,25 @@ Observación:
 \[v(t) = q_{in}(t) \qquad;\qquad \sigma(t) = q_{out} (t) \]
 \[h_m(t) = h(t) + \eta(t)\]
 
-El control realimentado más simple es una ganancia constante $k$, que maneja la válvula proporcionalmente al error $e(t)$.
+El control realimentado más simple es una ganancia constante $K$, que maneja la válvula proporcionalmente al error $e(t)$.
 
 Por intuición se espera que $h(t) \approx h^*$.
 
-\[h(t) = \int_{0}^{t}\left(k\left( \left[h^* - h_m(\tau) \right] + \left[ \frac{1}{k} \sigma(\tau) \right] \right) -\sigma(\tau)\right)\mathrm{d}\tau\]
+\[h(t) = \int_{0}^{t}\left(K\left( \left[h^* - h_m(\tau) \right] + \left[ \frac{1}{K} \sigma(\tau) \right] \right) -\sigma(\tau)\right)\mathrm{d}\tau\]
 
-\[h(t) = \int_{-\infty}^{t}\left(k(h^* - h_m(\tau)) \right) \mathrm{d}\tau~;\qquad h_m(t) = h(t) + \eta(t)\]
+\[h(t) = \int_{-\infty}^{t}\left(K(h^* - h_m(\tau)) \right) \mathrm{d}\tau~;\qquad h_m(t) = h(t) + \eta(t)\]
 
-\[h(t) = \int_{-\infty}^{t}\left(kh^* - kh(\tau) - k\eta(\tau) \right) \mathrm{d}\tau\]
-\[h(t) = \int_{-\infty}^{t}kh^*\mathrm{d}\tau - \int_{-\infty}^{t}kh(\tau) \mathrm{d}\tau - \int_{-\infty}^{t}k\eta(\tau) \mathrm{d}\tau\]
+\[h(t) = \int_{-\infty}^{t}\left(Kh^* - Kh(\tau) - K\eta(\tau) \right) \mathrm{d}\tau\]
+\[h(t) = \int_{-\infty}^{t}Kh^*\mathrm{d}\tau - \int_{-\infty}^{t}Kh(\tau) \mathrm{d}\tau - \int_{-\infty}^{t}K\eta(\tau) \mathrm{d}\tau\]
 
 Sea $h(t)$ una señal causal $\implies h(t) \exists \forall t\ge 0 $:
-\[\implies h(t) = \int_{0}^{t}kh^*\mathrm{d}\tau - \int_{0}^{t}kh(\tau)\mathrm{d}\tau - \int_{0}^{t}k\eta(\tau)\mathrm{d}\tau\]
+\[\implies h(t) = \int_{0}^{t}Kh^*\mathrm{d}\tau - \int_{0}^{t}Kh(\tau)\mathrm{d}\tau - \int_{0}^{t}K\eta(\tau)\mathrm{d}\tau\]
 
 Entonces aquí tenemos un controlador que está constituido por una parte retroalimentada (feedback) y una parte de acción preventiva (feedforward) el segundo termino entrega la acción predecible necesaria para compensar los cambios en la velocidad de fundición (para el ejemplo) mientras que el primer término reacciona al error dado por la diferencia entre el valor referencial y el valor actual del nivel.
 
-\begin{figure}[h!]
-\label{fig:sistema_control}
+\begin{figure}[!h]
 \centering
-\begin{circuitikz}[american voltages]
+\begin{circuitikz}[american voltages, thick,scale=0.6]
 \draw
 (0,0) node[mixer] (m1) {}
 (m1.1) node[inputarrow] {} node[right] {+}
@@ -200,7 +195,7 @@ to[short] ++(-2,0) node[above] {referencia $h^*$}
 (m1.3) to[short] ++(2,0)
 node[mixer, right] (m2) {}
 (m2.1) node[inputarrow] {} node[right] {+} node[above left] {$e(t)$}
-(m2.3) to[twoport, t = $k$, >] ++(3,0)
+(m2.3) to[twoport, t = $K$, >] ++(3,0)
 node[mixer, right] (m3) {}
 (m3.1) node[inputarrow] {} node[right] {+}
 to[short] ++(-0.5,0) node[] (flujo_in) {}
@@ -221,16 +216,36 @@ node[above] {-} node[below left] {$h_m(t)$}
 (m3.4) node[inputarrow, rotate = 270] {} node[below] {-}
 to[short, -*] ++(0,2) to[short] ++(0,2) node[right, text width = 2.5cm] {flujo de salida corresponde a la velocidad de fundición} node[below, left] {$\sigma(t)$}
 to[short] ++(0,-2)
-to[twoport, t = $k^{-1}$, >] node[above, text width = 2cm] {medición de velocidad de fundición} ++(-4,0)
+to[twoport, t = $K^{-1}$, >] node[above, text width = 2cm] {medición de velocidad de fundición} ++(-4,0)
 to[short] (m2.4) node[inputarrow, rotate = 270] {} node[below] {+}
 ;
 \draw node[below of= flujo_in, node distance = 2cm, text width = 2.5cm] (texto) {flujo de entrada desde la válvula de control};
 \draw [->] (texto) -- (flujo_in);
-\draw node[below of = medicion, node distance = 0.5cm, text width = 3cm] {medición del nivel en el molde}
+\draw node[below of = medicion, node distance = 0.5cm, text width = 3cm] {medición del nivel en el molde};
 \end{circuitikz}
 \caption{Modelo simplificado del control de nivel con acción compensativa para $q_{out} (t)$}
+\label{fig:sistema_control}
 \end{figure}
 
 La figura~\ref{fig:sistema_control} muestra el diagrama de bloques para el sistema de control.
+
+\subsection{Un primer indicador de ``trade-off'' (compromiso)}
+
+Para simular el desempeño (comportamiento dinámico) del lazo de control con $K = 1$ y $K = 5$. Encontramos que para la ganancia del control con $K$ pequeño resulta una respuesta lenta a los cambios en el nivel del molde. En cambio, para la ganancia de control grande $(K = 5)$ resulta una respuesta rápida, pero también se incrementan los efectos de ruido (medida de ruido) como se ve en el menor control de nivel en estado estacionario por los movimientos más significativos y agresivos de la válvula, entonces aquí pareciera que los requerimientos de desempeño están en conflicto uno con el otro, al menos en algún grado.
+
+En este punto, un ingeniero de control  que no tiene una buena formación formal en el diseño de sistemas de control tendría dificultades para evaluar si este conflicto es simplemente una consecuencia  de tener un controlador tan simple o si es algo fundamental.
+
+¿Cuánto esfuerzo se debe hacer para encontrar un valor adecuado para $K$?
+
+¿Debería hacerse más esfuerzo en el modelar el proceso del nivel del molde?
+
+En este curso iremos desarrollando los métodos para dar respuestas a estos y otras preguntas relacionadas. El ejemplo presentado nos motiva a formalizar la naturaleza del problema de control.
+
+\vspace{1mm}
+\textbf{Definición 1}: \textit{El problema fundamental de control.}
+\vspace{1mm}
+\\
+El problema de control de es encontrar una forma o camino técnicamente factible que actúa sobre un proceso dado de manera que el proceso se comporte lo más cerca posible a algún comportamiento deseado.
+
 
 \end{document}
