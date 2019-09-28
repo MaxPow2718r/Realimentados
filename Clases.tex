@@ -233,6 +233,13 @@ La figura~\ref{fig:sistema_control} muestra el diagrama de bloques para el siste
 
 Para simular el desempeño (comportamiento dinámico) del lazo de control con $K = 1$ y $K = 5$. Encontramos que para la ganancia del control con $K$ pequeño resulta una respuesta lenta a los cambios en el nivel del molde. En cambio, para la ganancia de control grande $(K = 5)$ resulta una respuesta rápida, pero también se incrementan los efectos de ruido (medida de ruido) como se ve en el menor control de nivel en estado estacionario por los movimientos más significativos y agresivos de la válvula, entonces aquí pareciera que los requerimientos de desempeño están en conflicto uno con el otro, al menos en algún grado.
 
+\begin{figure}[!h]
+\centering
+\includegraphics[width = 0.5\textwidth]{trade_off}
+\caption{Un primer indicador de ``trade-off''}
+\label{trade}
+\end{figure}
+
 En este punto, un ingeniero de control  que no tiene una buena formación formal en el diseño de sistemas de control tendría dificultades para evaluar si este conflicto es simplemente una consecuencia  de tener un controlador tan simple o si es algo fundamental.
 
 ¿Cuánto esfuerzo se debe hacer para encontrar un valor adecuado para $K$?
@@ -240,12 +247,21 @@ En este punto, un ingeniero de control  que no tiene una buena formación formal
 ¿Debería hacerse más esfuerzo en el modelar el proceso del nivel del molde?
 
 En este curso iremos desarrollando los métodos para dar respuestas a estos y otras preguntas relacionadas. El ejemplo presentado nos motiva a formalizar la naturaleza del problema de control.
-
+\newpage
 \vspace{1mm}
 \textbf{Definición 1}: \textit{El problema fundamental de control.}
 \vspace{1mm}
 \\
-El problema de control de es encontrar una forma o camino técnicamente factible que actúa sobre un proceso dado de manera que el proceso se comporte lo más cerca posible a algún comportamiento deseado.
+El problema de control de es encontrar una forma o camino técnicamente factible que actúa sobre un proceso dado de manera que el proceso se comporte lo más cerca posible a algún comportamiento deseado.\\
+Más aún, este comportamiento deseado debe lograse (llevarse a cabo) con la presencia de incertidumbres del modelo (proceso) y ante la presencia de perturbaciones externas sin controlar (que no se manejan) que actúan sobre el proceso de esta definición se deduce o introducen las siguientes ideas.\\
+\begin{enumerate}
+		\item \textbf{\textit{Comportamiento deseado:}} este debe especificarse como parte del problema de diseño.
+		\item \textbf{\textit{Factibilidad:}} esta significa que la solución debe satisfacer varias inversiones que pueden ser de naturaleza técnica, ambiental, económica u otra.
+		\item \textbf{\textit{Incertidumbre:}} el conocimiento disponible sobre un sistema generalmente será limitado y de precisión limitada.
+		\item \textbf{\textit{Acción:}}
+\end{enumerate}
+
+<++>
 
 
 \end{document}
