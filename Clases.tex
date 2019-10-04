@@ -258,10 +258,110 @@ Más aún, este comportamiento deseado debe lograse (llevarse a cabo) con la pre
 		\item \textbf{\textit{Comportamiento deseado:}} este debe especificarse como parte del problema de diseño.
 		\item \textbf{\textit{Factibilidad:}} esta significa que la solución debe satisfacer varias inversiones que pueden ser de naturaleza técnica, ambiental, económica u otra.
 		\item \textbf{\textit{Incertidumbre:}} el conocimiento disponible sobre un sistema generalmente será limitado y de precisión limitada.
-		\item \textbf{\textit{Acción:}}
+		\item \textbf{\textit{Acción:}} la solución requiere que la acción se aplique de alguna  manera al proceso, típicamente a través de más variables manipuladas que controlan a los actuadores.
+		\item \textbf{\textit{Perturbaciones:}} el proceso que se controla generalmente tendrá otras entradas distintas de las que manipula el controlador. Estas son las perturbaciones.
+		\item \textbf{\textit{Comportamiento aproximado:}} una solución factible rara vez será perfecta habrá inevitablemente un grado de aproximación para lograr el objetivo especificado.
+		\item \textbf{\textit{Mediciones:}} estás mediciones son cruciales para que el controlador sepa que está haciendo realmente el sistema y cómo la afectan las perturbaciones inevitables.
 \end{enumerate}
 
-<++>
+Desde ahora nos referiremos al proceso que se controla como ``la planta'' y diremos que \underline{la planta} se controla automáticamente cuando los objetivos de control se logran con una intervención humana poco frecuente.
 
+\subsection{Solución al problema de control o inversión}
+
+Una manera simple, pero que capta la esencia del problema de control, es a través de la \underline{inversión}. Esta idease basa en lo siguiente: \\
+Conocemos que efecto produce una acción en la entrada de un sistema en la salida del sistema y además tenemos un comportamiento deseado para la salida, entonces se necesita invertir la solución entre la entrada y la salida para lograr es comportamiento deseado en la salida.
+
+Esta idea aparentemente sencilla juega un rol profundo en el diseño del sistema de control. En el mundo real la mayoría de las dificultades del control se relacionan con encontrar una estrategia que \underline{capte la idea de inversión} y que al mismo tiempo consideren \underline{errores de modelado}, \underline{perturbaciones}, \underline{ruido de medición}, etc.
+
+Supongamos que el comportamiento requerido está especificado por una señal objetivo (escalar) o referencia $r(t)$, para una variable de proceso particular $y(t)$ que tiene una perturbación aditiva $d(t)$. Además, tenemos disponible una sola variable manipulada, $u(t)$ (actuación).
+
+Entonces, denotemos por ``$y$'' a una función temporal, es decir:
+
+\[
+		y = \left\{y(t) : t \in \mathbb{R}  \right\}
+\]
+
+La descripción de la solución para el problema de control veremos que es bastante general, que en principio puede aplicarse a los sistemas \underline{dinámicos no lineales}.
+
+En particular, utilizaremos una función, $f\langle \circ \rangle$, para denotar un operador que ``mapea'' un espacio de funciones a otro.
+
+Para esta interpretación general, introduciremos la siguiente notación. El símbolo ``$y$'' denotará un elemento de un espacio de funciones:
+
+\[
+		y = \left\{ y (t) : \mathbb{R} \to \mathbb{R}  \right\}
+\]
+
+Un operador $f\langle \circ \rangle $ representa un espacio de mapeo de sus funciones de $x$ en $x$, aquí podemos interpretar $f$ como una ganancia lineal que vincula un mínimo real, la entrada ``$u$'' con otra salida ``$y$''. Posteriormente se hará una interpretación más general que utiliza operadores dinámicos no lineales. Se asume que la salida está relacionada con la entrada por una función conocida por:
+
+\begin{equation}\label{eq:mapeo}
+		y = f\langle u \rangle + d
+\end{equation}
+
+Donde $f$ es una transformación o mapeo (posiblemente dinámico) que describe las relaciones de entrada-salida en la planta.
+
+A la relación dada por la ecuación \ref{eq:mapeo} la llamaremos \underline{modelo}. Entonces, en el problema de control requiere que encontremos una forma de generar una ecuación de entrada de control ``$u$'', de tal modo que $y = r$ aplicando la idea de inversión para la solución, tenemos:
+
+\begin{equation}\label{eq:referencia}
+		y = r= f\langle u \rangle + d
+\end{equation}
+
+De esta podemos entonces, derivar, una \underline{ley de control}. Luego tenemos:
+
+\[
+		r = f\langle u \rangle +d \implies f\langle u \rangle = r - d
+\]
+
+\begin{equation}\label{eq:leydecontrol}
+		u = f^{-1} \langle r-d \rangle \qquad (\mathrm{ley~de~control})
+\end{equation}
+
+La idea se ilustra en la figura \ref{fig:controlconceptual}.
+
+\begin{figure}[!h]
+\centering
+\begin{circuitikz}
+\draw
+(0,0) node[mixer] (m1) {}
+(m1.1) node[inputarrow] {} node[above left] {$r$} node[right] {+}
+to[short] ++(-1,0)
+(m1.3) to[short] ++(1,0) node[] (A) {} to[short] ++(0.5,0) to[twoport, text = $f^{-1} \langle u \rangle$, >] ++(1,0)
+to[short] ++(0.5,0) node[] (B) {}
+to[short] ++(0.5,0) node[above] {$u$}
+to[short] ++(0.5,0)
+to[short] ++(0.5,0) node[] (C) {}
+to[twoport, text = $f\langle \circ \rangle$, >] ++(2,0) to[short] ++(1,0)
+node[mixer, right] (m2) {}
+(m2.1) node[inputarrow] {} node[right] {+}
+(m2.3) to[short] ++(1,0) node[] (D) {}
+to[short] ++(1,0) node[inputarrow] {} node[above right] {$y$}
+(m2.4) node[inputarrow, rotate = 270] {} node[below] {+}
+to[short,-*] ++(0,1)
+to[short] ++(0,1) node[above right] {$d$}
+to[short] ++(0,-1)
+to[short] ++(-1,0) -| (m1.4) node[inputarrow, rotate = 270] {}
+node[inputarrow, rotate = 270] {} node[below] {-}
+;
+\draw[dotted] ($(A.north)+(0,1)$) rectangle ($(B.south) + (0,-1)$);
+\draw[dotted] ($(C.north) + (0,1)$) rectangle ($(D.south) + (0,-1)$);
+\draw ($(A.south) + (1,-1.5)$) node[] {Controlador Conceptual};
+\draw ($(C.south) + (2.5,-1.5)$) node[] {Planta};
+\end{circuitikz}
+\caption{Controlador conceptual}
+\label{fig:controlconceptual}
+\end{figure}
+
+Esto es una solución conceptual del problema que al reflexionar sobre la ecuación \ref{eq:leydecontrol} se encuentra que debe cumplir ciertos requisitos estrictos para que funcione o sea exitosa. Esto para analizar las ecuaciones \ref{eq:referencia} y \ref{eq:leydecontrol} encontramos que se deben cumplir los siguientes requerimientos:
+
+\begin{itemize}
+		\item \textbf{R1:} - La transformación ``$f$'' debe describir exactamente la planta.
+		\item \textbf{R2:} -``$f$'' debe estar bien formulada de manera que se tiene una salida acotada cuando la entrada es acotada, entonces decimos que la transformación \underline{``$f$'' es estable}.
+		\item \textbf{R3:} - El inverso de $f$; $f^{-1}$, también debe estar bien formulado en el sentido de \textbf{R2}.
+		\item \textbf{R4:} -La perturbación debe ser medible, de manera que ``$u$'' sea computable.
+		\item \textbf{R5:} -La acción resultante (actuación) ``$u$'' debe ser \underline{realizable} y no violar ninguna restricción.
+\end{itemize}
+
+Estos son requisitos bastante exigentes que una parte importante de la teoría de control automático se ocupa del tema de como cambiar la arquitectura de control para que se logre la inversión, pero de una manera más robusta de forma que los estrictos requisitos vistos se puedan lograr.
+
+Para ilustrar esto en la práctica
 
 \end{document}
