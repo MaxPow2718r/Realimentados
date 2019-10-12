@@ -364,6 +364,148 @@ Estos son requisitos bastante exigentes que una parte importante de la teoría d
 
 Para ilustrar esto en la práctica
 
-ilustracion bla bla
+lo que tiene que enviarme muti.
+
+\begin{itemize}
+\item Puede ocurrir fácilmente, que para una señal de referencia, la ley de control nos lleva o nos da una actuación (variable manipulada) que está fuera del rango permitido para la entrada de la planta. Esto nos lleva a que se sature la entrada de la planta.\\
+$\implies$ la condición \textbf{R5} no se cumple.
+\end{itemize}
+
+Ejemplo 2: Proceso de flotación en minerales.
+
+En el procesamiento del cobre una etapa inicial es el proceso de flotación.
+
+\begin{itemize}
+		\item Proceso complejo $\implies $ \textbf{R1} es difícil de satisfacer.
+		\item La perturbación: el tamaño de las partículas del mineral en la pulpa.\\
+				Esta perturbación es la salida de una etapa previa (grinding).
+				$\implies $ para la ley de control se necesita medir el tamaño de las particulas o al menos una medida promedio de estas
+				$\implies $ la condición \textbf{R4} es difícil de satisfacer.
+		\item También se tiene un retraso temporal $\implies $ \textbf{R3} no se cumple.
+\end{itemize}
+
+Entonces tenemos que tener en mente que inicialmente habrá limitaciones intrínsecas y que se buscara la solución dentro de errores y limitaciones.
+
+Teniendo en cuenta esto, impondremos restricciones que nos permitan resolver el problema sujeto a limitaciones que imponen la configuración física.
+
+Las restricciones (limitaciones) más comunes presentes son:
+
+\begin{itemize}
+		\item \textbf{\textit{L1:}} Restringe la actuación a aquellos problemas donde el comportamiento prescrito (señal de referencia) pertenece a una clase (conjunto) restringido y donde el comportamiento deseado se logar de forma asintótica.
+		\item \textbf{\textit{L2:}} Buscar inversos aproximados
+\end{itemize}
+
+\textbf{Resumen:} En principio todos los controladores generan implícitamente un inverso del proceso, en la medida que este sea factible (posible).
+
+\subsection{Alta ganancia de realimentación e inversión}
+
+Como veremos más adelante las modelos típicamente usados para describir las plantas reales no se pueden invertir exactamente o dicho de otra forma, no tienen inversa. Sin embargo, existe una propiedad de realimentación que implícitamente genera una inversa aproximada de la dinámica de la planta, sin tener que llevar a cabo la inversión explícitamente.
+
+\begin{figure}[!h]
+\centering
+\begin{circuitikz}
+\draw
+node[mixer] (m) {}
+(m.1) node[inputarrow] {} node[right] {+}
+to[short] ++(-2,0)
+(m.3) to[twoport, text = $h\langle \circ \rangle$] ++(3,0)
+node[circ] (A) {}
+(A) to[short] ++(1,0) node[above left] {$u$}
+to[twoport, text = $f\langle \circ \rangle$] ++(1,0)
+to[short] ++(1,0) node[inputarrow] {} node[above] {$y$}
+
+(A) to[short] ++(0,-2)
+to[short] ++(-1,0)
+to[twoport, t = $f\langle \circ \rangle$, >] ++(-1,0)
+node[above left] {$z$}
+to[short] ++(-1,0) -| (m.2) node[above] {-}
+;
+\draw ($(A) + (1.5,-1)$) node[] {Planta};
+\end{circuitikz}
+\caption{Realización conceptual del controlador.}
+\label{fig:realizacion}
+\end{figure}
+
+Para desarrollar esta idea creamos el concepto de realización de la figura \ref{fig:realizacion} que reemplaza la idea de la figura \ref{fig:controlconceptual} aquí tenemos que ``$f$'' representa el modelo del proceso. La transformación ``$h$'' ese describirá a continuación.
+
+Como se vio anteriormente $r$, $y$, $u$; pueden ser interpretados como números reales y la transformación $h\langle \circ \rangle$ y $f\langle circ \rangle$ son como ganancias escalares lineales (para empezar). En una segunda lectura, estos nos pueden entregar una interpretación \underline{no lineal general} del proceso.
+
+De la figura \ref{fig:realizacion}, tenemos:
+
+\begin{equation}
+		u = h\langle r - z \rangle = h\langle r - f\langle u \rangle  \rangle
+\end{equation}
+
+\begin{equation}
+		\implies h^{-1} \langle u \rangle = r- f\langle u \rangle
+\end{equation}
+
+De donde tenemos que la actuación va a ser:
+
+\begin{equation}\label{eq:actuacion}
+		u = f^{-1} \langle r - h^{-1}\langle u \rangle  \rangle
+\end{equation}
+
+$u$ es la actuación (salida del controlador).
+
+La ecuación \ref{eq:actuacion} sugiere que el lazo de la figura \ref{fig:realizacion} implementa aproximadamente la inversa de ``$f$'', esto es, $u = f\langle r \rangle$, si ``$r$'' es aproximadamente $r \approx r- h^{-1} \langle u \rangle$.
+
+Esto se logra si la inversa de $h$ es pequeña, es decir, $h$ es grande.
+
+Por lo tanto, si $f$ caracteriza la planta y si $h$ es una ganancia de transformación grande, entonces la arquitectura ilustrada en la figura \ref{fig:realizacion} efectivamente constituye una inversa aproximada del modelo de la planta si el modelo de esta, $f$ se invierte explícitamente.
+
+Veamos esta idea con un ejemplo.
+
+Asumimos el siguiente modelo para una planta.
+
+\begin{equation}
+		\frac{\mathrm{d} y(t)}{\mathrm{d} t} + 2 \sqrt{y(t)} = u(t)
+\end{equation}
+
+Se requiere una ley de control que asegure que la salida de la planta $y(t)$ siga una referencia que varia lentamente.
+
+Una forma de resolver el problema es construir una inversa para el modelo que es valido en la región de baja frecuencia.
+
+Usando la arquitectura de la figura \ref{fig:realizacion}, se obtiene una inversa aproximada. Proveyendo que $h$ sea (tenga) una ganancia grande a baja frecuencia.
+
+Tarea 2(poner hiper vinculo)
+
+\begin{figure}[!h]
+\centering
+\includegraphics[width = 0.8\textwidth]{inversion_aproximada}
+\caption{Control de nivel del tanque usando inversión aproximada}
+\label{fig:inversionaproximada}
+\end{figure}
+
+
+Una simple solución es escoger $h\langle \circ \rangle$ como un integrador con ganancia infinita a frecuencia cero. El resultado se ve en la figura \ref{fig:inversionaproximada} que muestra la referencia y la salida de la planta.
+
+\subsection{De lazo abierto a lazo cerrado.}
+
+El esquema particular de la figura \ref{fig:realizacion}, nos sugiere una inversa aproximada del modelo de la planta aunque el controlador en este esquema esta implementado como un sistema realimentado, el control que se aplica a la planta es como un \underline{lazo abierto}. En particular si la señal de control $u(t)$ es independiente de lo que actualmente está sucediendo en la planta
+
+Esto es un problema (o retroceso) serio dado que la metodología no podría darnos una solución satisfactoria para el problema de control, a menos que:
+
+\begin{enumerate}
+		\item el modelo en el cual se basa el diseño del controlador sea muy bueno (representación de la planta).
+		\item el modelo y su inversa sean estables.
+		\item las perturbaciones y condiciones iniciales sean despreciables.
+\end{enumerate}
+
+\begin{figure}[!h]
+\centering
+\begin{circuitikz}
+\draw
+node[mixer] (m) {}
+(m.1) node[inputarrow] {} node[right] {+} to[short] ++(-1,0) node[above] {$r(t)$}
+(m.3) to[twoport[t = Feedback], >] ++(2,0)
+;
+\end{circuitikz}
+\caption{control de lazo abierto con inverso interno}
+\label{fig:lazoabierto}
+\end{figure}
+
+<++>
+
 
 \end{document}
