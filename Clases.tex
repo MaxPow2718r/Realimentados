@@ -14,6 +14,7 @@
 %graphics enviroments
 \usepackage{graphicx}
 
+
 %use inkscape to import directly svg images
 \newcommand{\executeiffilenewer}[3]{%
 		\ifnum\pdfstrcmp{\pdffilemoddate{#1}}%
@@ -29,7 +30,43 @@
 }
 %circuit diagrams packages
 \usepackage{circuitikz}
-\usetikzlibrary{shapes, arrows, babel}
+\usetikzlibrary{shapes, arrows, babel, calc}
+
+\usepackage{background}
+\usepackage{tikzpagenodes}
+
+\makeatletter
+\def\parsecomma#1,#2\endparsecomma{\def\page@x{#1}\def\page@y{#2}}
+\tikzdeclarecoordinatesystem{page}{
+    \parsecomma#1\endparsecomma
+    \pgfpointanchor{current page}{north east}
+    % Save the upper right corner
+    \pgf@xc=\pgf@x%
+    \pgf@yc=\pgf@y%
+    % save the lower left corner
+    \pgfpointanchor{current page}{south west}
+    \pgf@xb=\pgf@x%
+    \pgf@yb=\pgf@y%
+    % Transform to the correct placement
+    \pgfmathparse{(\pgf@xc-\pgf@xb)/2.*\page@x+(\pgf@xc+\pgf@xb)/2.}
+    \expandafter\pgf@x\expandafter=\pgfmathresult pt
+    \pgfmathparse{(\pgf@yc-\pgf@yb)/2.*\page@y+(\pgf@yc+\pgf@yb)/2.}
+    \expandafter\pgf@y\expandafter=\pgfmathresult pt
+}
+\makeatother
+
+\backgroundsetup%
+{   angle=0,
+    opacity=1,
+    scale=1,
+    color=black,
+    contents=%
+    {   \begin{tikzpicture}[remember picture,overlay]
+					\draw (page cs:1,-1) circle (2cm);
+					\draw (page cs:0.92,-0.92) -- (page cs:0.88,-0.88);
+        \end{tikzpicture}
+    }
+}
 
 %page format
 \usepackage[margin = 2cm, left = 2cm, includefoot]{geometry}
@@ -418,7 +455,7 @@ to[short] ++(1,0) node[inputarrow] {} node[above] {$y$}
 to[short] ++(-1,0)
 to[twoport, t = $f\langle \circ \rangle$, >] ++(-1,0)
 node[above left] {$z$}
-to[short] ++(-1,0) -| (m.2) node[above] {-}
+to[short] ++(-1,0) -| (m.2) node[above] {-} node[inputarrow, rotate = 90] {}
 ;
 \draw ($(A) + (1.5,-1)$) node[] {Planta};
 \end{circuitikz}
@@ -492,20 +529,131 @@ Esto es un problema (o retroceso) serio dado que la metodología no podría darn
 		\item las perturbaciones y condiciones iniciales sean despreciables.
 \end{enumerate}
 
-\begin{figure}[!h]
+\begin{figure}[!ht]
 \centering
 \begin{circuitikz}
+		\tikzstyle{block} = [rectangle, draw, thick]
+		\tikzstyle{line} = [draw, -]
 \draw
 node[mixer] (m) {}
 (m.1) node[inputarrow] {} node[right] {+} to[short] ++(-1,0) node[above] {$r(t)$}
-(m.3) to[twoport[t = Feedback], >] ++(2,0)
+(m.2) node[inputarrow, rotate = 90] {}
+(m.3) to[short] ++(1,0) node[above left] {$e(t)$} node[inputarrow] {} node[block, right] (feedback) {Feedback}
+(feedback.east) to[short] ++(1,0) node[circ] (A) {} node[above] {A}
+node[block, below of = feedback] (model) {Model}
+(model.east) node[inputarrow, rotate = 180] {}
+(A) to[short] ++(1,0) node[block, right] (plant) {Plant}
+(plant.west) node[inputarrow] {} node[above left] {$u(t)$}
+(plant.east) to[short] ++(1,0) node[inputarrow] {} node[above] {$y(t)$}
 ;
+\path [line] (A) |- (model);
+\path [line] (model) -| (m.2);
+\draw[dotted] ($(feedback.north) + (-3,0.5)$) rectangle ($(model.south) + (2,-0.5)$);
+\draw ($(model.south) + (-0.4,-0.8)$) node[] {Controlador de lazo abierto};
 \end{circuitikz}
 \caption{control de lazo abierto con inverso interno}
 \label{fig:lazoabierto}
 \end{figure}
 
-<++>
+\begin{figure}[!ht]
+\centering
+\begin{circuitikz}
+		\tikzstyle{block} = [rectangle, draw, thick]
+		\tikzstyle{line} = [draw, -]
+\draw
+node[mixer] (m) {}
+(m.1) node[inputarrow] {} node[right] {+}
+to[short] ++(-2,0) node[above] {$r(t)$}
+(m.3) to[short] ++(1,0) node[block, right] (feedback) {Feedback}
+node[inputarrow] {} node[above left] {$e(t)$}
+(feedback.east) to[short] ++(1,0) node[block, right] (plant) {Plant}
+node[inputarrow] {} node[above left] {$u(t)$}
+(plant.east) to[short] ++(1,0) node[circ] (A) {} node[above] {A'}
+(A) to[short] ++(1,0) node[inputarrow] {} node[above] {$y(t)$}
+(A) to[short] ++(0,-2) -| (m.2)
+(m.2) node[inputarrow, rotate = 90] {} node[above] {-}
+;
+\end{circuitikz}
+\caption{Control de lazo cerrado}
+\label{fig:lazocerrado}
+\end{figure}
+
+Veamos las diferencias y similitudes entre lazo abierto y cerrado en las figuras \ref{fig:lazoabierto} y \ref{fig:lazocerrado} respectivamente, lo primero es que se tenga un modelo exacto representativo de la planta y que todas las señales estén acotadas, entonces se dice que ambos esquemas son equivalentes, con respecto a la relación entre entrada y salida.
+
+\begin{enumerate}
+		\item La diferencia claves son debidas a las perturbaciones y diferentes condiciones iniciales.
+		\item En el lazo de control abierto, el controlador incorpora internamente la retroalimentación, es decir, la señal en el punto \textbf{A} se retroalimenta.
+\end{enumerate}
+
+En el control retroalimentado  de lazo cerrado la señal en el punto \textbf{A'} se retroalimenta.
+
+La diferencia fundamental, es que, en el primer caso, todo sucede en el controlador, es decir, en una computadora.
+
+En el segundo caso la señal retroalimentada es una variable del proceso, es decir, se usan sensores (dispositivos) para determinar (medir) que sucede en cada momento.
+
+\subsection{El compromiso (``trade-off'') que se hace al escoger la ganancia de realimentación.}
+
+-\textbf{Generar un controlador de ganancia grande de realimentación.}
+
+Esto es cierto en la medida que se pueda, dado que, \underline{nada en la vida es gratis} y esta también se aplica a una ganancia grande de realimentación (``Feedback gain'').
+
+Por ejemplo, si las perturbaciones de la planta nos conducen a un error $e(t)$ distinto de cero nos dará una acción de control muy grande $u(t)$, lo cual puede estar fuera del rango permitido para la entrada (de la planta), invalidando así la solución.
+
+Otro problema potencial con la alta ganancia de realimentación es que a menudo existe un riesgo de inestabilidad esta inestabilidad se caracteriza por una oscilación sostenida creciente.
+
+Ejemplo: cuando un parlante se acerca demasiado a un micrófono se escucha un sonido muy fuerte debido al exceso de ganancia.
+
+Consecuencias trágicas de inestabilidad son la caída de aviones y el desastre de Chernobyl, situación fuera de control.
+
+También tenemos las desventajas que un incremento de la ganancia de control aumenta la sensibilidad al ruido de medición.
+
+\textbf{Observación:} una alta ganancia de control nos da aproximadamente como resultado la ``inversión'' que como vimos es la esencia del control. Sin embargo, en la practica la elección de la ganancia de realimentación es una parte de complejidad de compromiso (``trade-off'') del diseño. El entender el balance de este compromiso es la esencia del diseño de sistemas de control.
+
+\subsection{Medición}
+
+Hemos visto que es clave para el control realimentado que exista una medición adecuada para retroalimentar. Si se puede medir una variable, entonces tenemos una buena posibilidad de que pueda desdar un controlador que lleve al sistema
+
+\begin{figure}[!ht]
+\centering
+\begin{circuitikz}
+		\tikzstyle{block} = [rectangle, draw, thick]
+		\tikzstyle{line} = [draw, -]
+\draw
+node[mixer] (m) {}
+(m.1) node[inputarrow] {} node[right] {+}
+to[short] ++(-2,0) node[above] {$r(t)$}
+(m.3) to[short] ++(1,0) node[inputarrow] {} node[above left] {$e(t)$}
+node[block, right] (controlador) {Controlador}
+(controlador.east) to[short] ++(1,0) node[above left] {$u(t)$} node[inputarrow] {}
+node[block, right] (planta) {Planta}
+(planta.east) to[short] ++(1,0) node[circ] (A) {} node[above] {A'}
+(A) to[short] ++(1,0) node[above] {$y(t)$}
+(A) to[short] ++(0,-2) to[short] ++(-2,0)
+node[block, text width = 2.5cm, left] (sensor) {Sistema de medición y transmisión de señal}
+(sensor.east) node[inputarrow, rotate = 180] {};
+\path[line] (sensor.west) -| (m.2)
+;
+\draw
+(m.2) node[inputarrow, rotate = 90] {} node[below right] {$y_{m}(t)$}
+node[above] {-}
+;
+\end{circuitikz}
+\caption{Control realimentado con sensores.}
+\label{fig:controlsensores}
+\end{figure}
+
+En la figura \ref{fig:controlsensores} se aprecia una descripción más precisa del lazo de control realimentado incluyendo sensores. De la figura se puede ver que lo que actualmente se controla es el valor de la medición en vez del valor de la salida de la planta.
+
+Por lo tanto, el sistema de medición debe satisfacer idealmente requerimientos tales como:
+
+\begin{enumerate}
+		\item Fiabilidad: Debe funcionar dentro de un rango.
+		\item Exactitud: Para una variable con un valor constante, la medición debe establecerse en el valor correcto
+		\item Capacidad de respuesta: Si la variable cambia el sistema debe poder seguir los cambios. Las mediciones de respuesta lenta pueden no solo afectar la calidad del control, si no que también hacer que el ciclo de retroalimentación sea inestable. La inestabilidad del lazo puede surgir aunque el lazo haya sido diseñado para ser estable suponiendo una medición exacta de la variable del proceso.
+		\item Inmunidad al ruido: El sistema de medición, incluida la ruta de transmisión, no debe verse afectado significativamente por señales exógenas (externas) como el ruido de medición.
+		\item Linealidad: Si el sistema de medición no es lineal, entonces se debe conocer al menos la no linealidad para que pueda compensarlo.
+		\item No intrusivo: el dispositivo de medición do debe afectar significativamente el comportamiento de la planta.
+\end{enumerate}
 
 
 \end{document}
